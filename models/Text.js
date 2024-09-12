@@ -18,14 +18,16 @@ const sentenceSchema = new mongoose.Schema({
 });
 
 const textSchema = new mongoose.Schema({
-  textId: { type: String, required: true, unique: true },
-  ownerId: { type: String, required: true },
+  // ownerId: { type: String, required: true },
   type: {
     type: String,
     required: true,
     enum: ["public", "private"],
   },
   text: { type: [sentenceSchema], required: true },
+  videoLink: String,
+  title: String,
+  description: String,
 });
 
 module.exports = mongoose.model("Text", textSchema);

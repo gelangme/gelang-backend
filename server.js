@@ -10,6 +10,12 @@ const init = async () => {
   const server = Hapi.server({
     port: 3001,
     host: "localhost",
+    routes: {
+      cors: {
+        origin: ["http://localhost:3000"], // Your frontend URL
+        credentials: true, // Enable credentials if you're using cookies for authentication
+      },
+    },
   });
 
   await server.register(require("@hapi/cookie"));
@@ -22,15 +28,22 @@ const init = async () => {
       isSecure: false,
       path: "/",
       isHttpOnly: true,
-      isSameSite: "Lax",
+      isSameSite: "None",
     },
     redirectTo: false,
     validate: async (request, session) => {
       try {
+        console.log("VALIDATING...");
         const user = await User.findById(session.id);
+        console.log("USER BY SESSION ID: ", user);
+
         if (!user) {
           return { valid: false };
         }
+        console.log("VALIDATION COMPLETED: ", {
+          valid: true,
+          credentials: user,
+        });
         return { valid: true, credentials: user };
       } catch (error) {
         console.error("Error in validate function:", error);
@@ -66,6 +79,29 @@ const init = async () => {
       }
 
       return h.response({ message: "No text with that id" }).code(400);
+    },
+  });
+
+  server.route({
+    method: "GET",
+    path: "/menu",
+    options: {
+      auth: false,
+    },
+    handler: async (request, h) => {
+      try {
+        const items = await Text.find().exec();
+        const menuItems = items.map((item) => ({
+          description: item.description,
+          title: item.title,
+          textID: item._id,
+        }));
+
+        return h.response(menuItems).code(200);
+      } catch (error) {
+        console.error("Error fetching items:", error);
+        return h.response({ message: "Internal Server Error" }).code(500);
+      }
     },
   });
 
@@ -123,6 +159,25 @@ const init = async () => {
   });
 
   server.route({
+    method: "GET",
+    path: "/me",
+    options: {
+      auth: "session",
+      cors: {
+        origin: ["http://localhost:3000"],
+        credentials: true,
+      },
+    },
+    handler: async (request, h) => {
+      const user = request.auth.credentials;
+      if (!user) {
+        return h.response({ message: "User not authenticated" }).code(401);
+      }
+      return h.response({ user }).code(200);
+    },
+  });
+
+  server.route({
     method: "POST",
     path: "/logout",
     handler: (request, h) => {
@@ -130,14 +185,6 @@ const init = async () => {
       return h.response({ message: "Logout successful" }).code(200);
     },
   });
-
-  //   server.route({
-  //     method: "GET",
-  //     path: "/profile",
-  //     handler: (request, h) => {
-  //       return h.response({ user: request.auth.credentials }).code(200);
-  //     },
-  //   });
 
   await server.start();
   console.log("Server running on %s", server.info.uri);
