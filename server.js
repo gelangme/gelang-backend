@@ -26,9 +26,10 @@ const init = async () => {
       password:
         "a_secure_random_secret_string_that_is_at_least_32_characters_long",
       isSecure: false,
-      path: "/",
-      isHttpOnly: true,
-      isSameSite: "None",
+      // path: "/",
+      ttl: 60 * 60 * 1000,
+      isHttpOnly: false,
+      isSameSite: false,
     },
     redirectTo: false,
     validate: async (request, session) => {
@@ -38,16 +39,16 @@ const init = async () => {
         console.log("USER BY SESSION ID: ", user);
 
         if (!user) {
-          return { valid: false };
+          return { isValid: false };
         }
         console.log("VALIDATION COMPLETED: ", {
           valid: true,
           credentials: user,
         });
-        return { valid: true, credentials: user };
+        return { isValid: true, credentials: user };
       } catch (error) {
         console.error("Error in validate function:", error);
-        return { valid: false };
+        return { isValid: false };
       }
     },
   });
