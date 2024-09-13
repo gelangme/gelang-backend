@@ -170,11 +170,13 @@ const init = async () => {
       },
     },
     handler: async (request, h) => {
-      const user = request.auth.credentials;
-      if (!user) {
+      const userInfo = request.auth.credentials;
+      if (!userInfo) {
         return h.response({ message: "User not authenticated" }).code(401);
       }
-      return h.response({ user }).code(200);
+      return h
+        .response({ user: { name: userInfo.name, email: userInfo.email } })
+        .code(200);
     },
   });
 
