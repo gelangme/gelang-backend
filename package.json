@@ -20,8 +20,10 @@
   "dependencies": {
     "@hapi/cookie": "^12.0.1",
     "@hapi/hapi": "20.2.1",
+    "@hapi/inert": "^7.1.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
     "hapi-server-session": "^5.1.2",
     "mongoose": "^8.6.1"
   }
