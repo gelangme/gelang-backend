@@ -1,1 +1,6 @@
+#Folders
 node_modules/
+public/images
+
+#Files
+.env
