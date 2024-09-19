@@ -1,14 +1,18 @@
+require("dotenv").config();
+
 const Hapi = require("@hapi/hapi");
+const Inert = require("@hapi/inert");
+
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const User = require("./models/User");
 const Text = require("./models/Text");
 
 const init = async () => {
-  await mongoose.connect("mongodb://127.0.0.1:27017/gelangdb");
+  await mongoose.connect(process.env.DB_URL);
 
   const server = Hapi.server({
-    port: 3001,
+    port: process.env.PORT || 3000,
     host: "localhost",
     routes: {
       cors: {
@@ -19,6 +23,7 @@ const init = async () => {
   });
 
   await server.register(require("@hapi/cookie"));
+  await server.register(Inert);
 
   server.auth.strategy("session", "cookie", {
     cookie: {
@@ -103,6 +108,20 @@ const init = async () => {
         console.error("Error fetching items:", error);
         return h.response({ message: "Internal Server Error" }).code(500);
       }
+    },
+  });
+
+  server.route({
+    method: "GET",
+    path: "/images/{filename}",
+    options: {
+      auth: false,
+    },
+    handler: {
+      directory: {
+        path: "public/images", // The folder where your images are stored
+        index: false,
+      },
     },
   });
 
