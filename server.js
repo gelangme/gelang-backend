@@ -180,6 +180,30 @@ const init = async () => {
 
   server.route({
     method: "GET",
+    path: "/auth/check",
+    options: {
+      auth: "session",
+      cors: {
+        origin: ["http://localhost:3000"],
+        credentials: true,
+      },
+    },
+    handler: (request, h) => {
+      console.log("isAuthenticated: ", request.auth.isAuthenticated);
+      if (request.auth.isAuthenticated) {
+        const userInfo = request.auth.credentials;
+        return h.response({
+          isLoggedIn: true,
+          user: { name: userInfo.name, email: userInfo.email },
+        });
+      } else {
+        return h.response({ isLoggedIn: false, user: undefined }).code(401);
+      }
+    },
+  });
+
+  server.route({
+    method: "GET",
     path: "/me",
     options: {
       auth: "session",
@@ -202,6 +226,13 @@ const init = async () => {
   server.route({
     method: "POST",
     path: "/logout",
+    options: {
+      auth: "session",
+      cors: {
+        origin: ["http://localhost:3000"],
+        credentials: true,
+      },
+    },
     handler: (request, h) => {
       request.cookieAuth.clear();
       return h.response({ message: "Logout successful" }).code(200);
