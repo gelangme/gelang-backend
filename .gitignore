@@ -1,6 +1,6 @@
 #Folders
 node_modules/
-public/images
+#public/images
 
 #Files
 .env
